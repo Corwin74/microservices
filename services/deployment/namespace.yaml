@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: messenger
+    labels:
+        name: messenger
+        app: messenger

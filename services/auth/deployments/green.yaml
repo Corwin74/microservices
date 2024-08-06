@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-green
+  namespace: messenger
+  labels:
+    app: messenger
+spec:
+  # ReplicaSet
+  replicas: 1 # сколько экземляров приложения развернуть
+  selector: # какие поды нужно поддерживать
+    matchLabels:
+      app: auth
+      version: green
+  template: # для подов
+    metadata:
+      labels:
+        app: auth
+        version: green
+    spec:
+      containers:
+      - name: auth-container
+        image: docker.io/library/auth:green
+        imagePullPolicy: "Never" # for local in minikube
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
+        startupProbe:
+          httpGet:
+            path: /ping
+            port: 8080
+          failureThreshold: 2
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+  strategy: #
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
